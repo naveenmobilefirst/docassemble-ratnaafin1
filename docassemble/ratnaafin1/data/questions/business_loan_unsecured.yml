@@ -1,0 +1,283 @@
+modules:
+  - .db_data
+---
+objects:
+  - borrower: Individual
+  - ratnafin_official: Individual
+  - co_borrower: |
+      DAList.using(
+      object_type=Individual,
+      ask_number=True)
+  - guarantor: |
+      DAList.using(
+      object_type=Individual,
+      ask_number=True)
+---
+code: |
+  branch_address = branch_addres(branch_place)[0]
+---
+id: interview order
+initial: True
+code: |
+  aggrement_details
+  company_type_of_borrower
+  borrower_details
+  if  company_type_of_borrower != 'Individual Borrower':
+    for i in co_borrower:
+      i
+  is_guarantor_available
+  if is_guarantor_available:
+    for i in guarantor:
+      i
+  branch_details
+  loan_details
+  ratnafin_official_details
+  e_stamp
+  wait_screen
+  final_shown
+
+---
+field: aggrement_details
+question: |
+  Agreement Details 
+fields:
+  - Date of the Agreement : agreement_date 
+    datatype: date
+  - Place of Execution : execution_place 
+---
+question: |
+  E-Staming Details of Business Loan Unsercured
+fields:
+  - Business & Professional Loan Agreement : e_stamp
+    datatype: file
+    accept: |
+      "application/pdf, image/png"
+---
+question: |
+  DECLARATIONS CUM UNDERTAKINGS CUM AUTHORITY
+fields:
+  - What Type of Borrower : company_type_of_borrower
+    choices:
+      - Individual Borrower  
+      - Proprietary Concern
+      - Partnership Firm
+      - Limited Liability Partnership (LLP)
+      - Private/Public Limited Company
+---
+field: borrower_details
+question: |
+  Details of the Borrower
+fields:
+  - First Name : borrower.name.first  
+  - Middle Name: borrower.name.middle 
+  - Last Name: borrower.name.last
+  - Company Name: borrower_company_proprietary_concern
+    show if:
+      code: |
+        company_type_of_borrower == "Proprietary Concern"
+  - Company Name: borrower_company_parternship_firm
+    show if:
+      code: |
+        company_type_of_borrower == "Partnership Firm"
+  - Company Name : borrower_company_llp
+    show if:
+      code: |
+        company_type_of_borrower == "Limited Liability Partnership (LLP)"
+  - Company Name : borrower_company_public_or_private
+    show if:
+      code: |
+        company_type_of_borrower == "Private/Public Limited Company"
+  - LLPIN : llpin
+    show if:
+      code: |
+        company_type_of_borrower == "Limited Liability Partnership (LLP)"
+  - CIN No.: cin
+    show if:
+      code: |
+        company_type_of_borrower == "Private/Public Limited Company" 
+  
+  - Constitution: borrower_constitution
+  - PAN : borrower_pan_or_tan_or_cin 
+    show if:
+      code: |
+        company_type_of_borrower == 'Individual Borrower'      
+  - TAN/CIN : borrower_pan_or_tan_or_cin
+    show if:
+      code: |
+        company_type_of_borrower != 'Individual Borrower'
+  - Address of the Borrower: borrower.address.address
+  - City of the Borrower: borrower.address.city
+  - State of the Borrower: borrower.address.state
+  - Zip code of the Borrower: borrower.address.zip
+  - Email – address of the Borrower: borrower.mail
+    datatype: mail
+  - Phone Number of the Borrower:  borrower.phone
+  - No of Co-Borrowers : co_borrower.target_number
+    datatype: integer
+    min: 1
+    show if:
+      code: |
+        company_type_of_borrower != 'Individual Borrower'        
+---
+code: |
+  if company_type_of_borrower == "Proprietary Concern":
+    borrower_company = borrower_company_proprietary_concern
+  elif company_type_of_borrower == "Partnership Firm":
+    borrower_company = borrower_company_parternship_firm
+  elif company_type_of_borrower == "Limited Liability Partnership (LLP)":
+    borrower_company = borrower_company_llp
+  elif company_type_of_borrower == "Private/Public Limited Company":
+    borrower_company = borrower_company_public_or_private
+  else :
+    borrower_company=''
+---
+field: co_borrower_details
+question: |
+  Details of the ${ ordinal(i) } Co-Borrower
+fields:
+  - First Name: co_borrower[i].name.first  
+  - Middle Name: co_borrower[i].name.middle 
+  - Last Name: co_borrower[i].name.last
+  - Constitution: co_borrower[i].constitution
+  - PAN/TAN/CIN: co_borrower[i].pan_or_tan_or_cin 
+  - Address: co_borrower[i].address.address
+  - City: co_borrower[i].address.city
+  - State: co_borrower[i].address.state
+  - Zip Code: co_borrower[i].address.zip
+  - Email – Address: co_borrower[i].mail
+    datatype: mail
+  - Phone Number: co_borrower[i].phone
+---
+question: |
+  Guarantor and Deed of Hypothecations Details? 
+fields:
+  - Is Guarantor Avialble : is_guarantor_available
+    datatype: yesnoradio
+  - no.of guarantors: guarantor.target_number
+    datatype: integer
+    show if: is_guarantor_available
+    min: 1
+        
+---
+field: guarantor_details
+question: |
+  Details of the ${ ordinal(i) } Guarantor   
+fields:
+  - First Name : guarantor[i].name.first  
+  - Middle Name : guarantor[i].name.middle 
+  - Last Name : guarantor[i].name.last
+  - Constitutionr: guarantor[i].constitution
+  - PAN/TAN/CIN : guarantor[i].pan_or_tan_or_cin 
+  - Address: guarantor[i].address.address
+  - City: guarantor[i].address.city
+  - State: guarantor[i].address.state
+  - Zip Code: guarantor[i].address.zip
+  - Email – Address: guarantor[i].mail
+    datatype: mail
+  - Phone Number:  guarantor[i].phone
+---
+field: desc_hypothecated_assets
+question: |
+  Description for Hypothecated Assets  
+fields:
+  - Details of Equipment : equipment_details
+  - Model/Make : model_make
+  - Serial/Registration No. : serial_reg_no
+  - Name and Address of the Manufacturer/Dealer/Seller: name_address
+  - Invoice Date & No. : invoice_date_no
+  - Invoice Amount: invoice_amount
+  - Insurance Details: insurance_details
+  - Other Details (if any): other_details
+---
+field: branch_details
+question: |
+  Details of the Branch
+fields:
+  - Place of the Branch : branch_place 
+    code: |
+      branch_places
+  - Email – address(es) of the Branch: branch_mail 
+    datatype: mail
+  - Phone No. (s) of the Branch: branch_phone 
+---
+code: |
+  if security_deposit_or_dsra:
+    dsra_amount = (loan_amount * dsra_percentage)/100
+---
+field: loan_details
+question: |
+  Details of the Loan
+fields:
+  - Sanction Letter No.: loan_sanction_letter_number 
+  - Date of Sanction Letter: loan_date_of_sanction_letter 
+    datatype: date
+  - Facility Type: loan_facility_type 
+  - Specified Purpose: loan_specified_purpose 
+  - Amount of Loan: loan_amount   
+    datatype: integer
+  - Rate of Interest: loan_interest_rate    
+    datatype: integer
+  - Rate of FRR: loan_frr_rate    
+    datatype: integer
+  - Rate of Spread: loan_spread_rate    
+    datatype: integer
+  - Loan Processing fee: loan_processing_fee 
+    datatype: integer
+  - Tenure of Loan: loan_tenure 
+    datatype: integer
+  - Additional/Penal Interest: loan_penal_interest 
+    datatype: integer
+  - Repayment Method: loan_repayment_method 
+  - Number of Installments: loan_number_of_installments 
+    datatype: integer
+  - Foreclosure of Loan: loan_foreclosure  
+  - Is Security Deposit/DSRA Available: security_deposit_or_dsra
+    required: False
+    datatype: yesnoradio
+  - Security Deposit Percentage : dsra_percentage
+    datatype: integer
+    show if: security_deposit_or_dsra
+  - Security Deposit Interest Percentage : dsra_interest_percentage
+    datatype: integer
+    show if: security_deposit_or_dsra
+  - Lock-in Period: loan_lockin_period 
+    datatype: integer
+validation code: |
+  if loan_lockin_period > loan_tenure:
+    validation_error('Locking period should be less than Tenure of the Loan')
+---
+field: ratnafin_official_details
+question: |
+  Details of the Authorized official of RPCL
+fields:
+  - First Name : ratnafin_official.name.first  
+  - Middle Name: ratnafin_official.name.middle 
+  - Last Name: ratnafin_official.name.last
+---
+
+code: |
+  branch_places = ["Head Office", "C.G. Road","Bapunagar","Gandhinagar","Baroda","Rajkot","Surat","Himmatnagar","Mehsana","Palanpur","Vapi","Ankleshwar","Gandhidham"]
+  ratnaafin_company_address="201-205, Shilp Aperia, Near Ashok Vatika, Bopal-Ambli Road, Ahmedabad, Gujarat - 380054"
+---
+question: |
+  Thanks for uploading that document.
+subquestion: |
+  I am now converting the page images. 
+  Give me a minute to do so then press continue button.
+continue button field: wait_screen
+---
+event: final_shown
+question: |
+  Download document for Business Unsecured Loan
+    
+attachment code: |  
+  [the_document]
+---
+attachment:
+  name: Document for Business Unsecured Loan
+  variable name: the_document
+  docx template file: Booklet_BL_Unsecured_final1.docx
+  valid formats:
+    - pdf
+    - docx
+---
