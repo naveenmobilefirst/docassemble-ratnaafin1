@@ -1,0 +1,146 @@
+modules:
+  - .db_data
+---
+objects:
+  - borrower: Individual
+  - co_borrower: |
+      DAList.using(
+      object_type=Individual,
+      ask_number=True)
+  - guarantor: |
+      DAList.using(
+      object_type=Individual,
+      ask_number=True)
+---
+id: interview order
+initial: True
+code: |
+  company_type_of_borrower
+  borrower_details
+  if  is_co_borrower_available:
+    for i in co_borrower:
+      i
+
+
+---
+question: |
+  DECLARATIONS CUM UNDERTAKINGS CUM AUTHORITY
+fields:
+  - What Type of Borrower : company_type_of_borrower
+    choices:
+      - Individual Borrower  
+      - Proprietary Concern
+      - Partnership Firm
+      - Limited Liability Partnership (LLP)
+      - Private/Public Limited Company
+---
+initial: True
+code: |
+  if borrower_constitution != "Individual":
+    borrower.name.first = ''
+---
+field: borrower_details
+question: |
+  Details of the Borrower
+fields:
+  - Constitution: borrower_constitution
+    choices:
+      - Individual   
+      - Proprietary 
+      - Partnership Firm
+      - Limited Liability Partnership (LLP)
+      - Private/Public Limited Company
+  - First Name : borrower.name.first  
+    js show if: |
+      val("borrower_constitution") === "Individual"
+  - Middle Name: borrower.name.middle 
+    js show if: |
+      val("borrower_constitution") === "Individual"
+  - Last Name: borrower.name.last
+    js show if: |
+      val("borrower_constitution") === "Individual"
+  - Company Name: borrower_company
+    js show if: |
+      val("borrower_constitution") !== "Individual"
+  - LLPIN : llpin
+    show if:
+      code: |
+        company_type_of_borrower == "Limited Liability Partnership (LLP)"
+  - CIN No.: cin
+    show if:
+      code: |
+        company_type_of_borrower == "Private/Public Limited Company" 
+  - PAN : borrower_pan_or_tan_or_cin 
+    show if:
+      code: |
+        company_type_of_borrower == 'Individual Borrower'      
+  - TAN/PAN : borrower_pan_or_tan_or_cin
+    show if:
+      code: |
+        company_type_of_borrower != 'Individual Borrower'
+  - Address of the Borrower: borrower.address.address
+  - City of the Borrower: borrower.address.city
+  - State of the Borrower: borrower.address.state
+  - Zip code of the Borrower: borrower.address.zip
+  - Email – address of the Borrower: borrower.mail
+    datatype: email
+  - Phone Number of the Borrower:  borrower.phone
+  - Is Co-Borrowers Available ?: is_co_borrower_available
+    datatype: yesnoradio
+  - No of Co-Borrowers : co_borrower.target_number
+    datatype: integer
+    min: 1
+    show if: is_co_borrower_available
+  - Attention Mr./Ms : borrwer_attention_mr_ms
+
+---
+field: co_borrower_details
+question: |
+  Details of the ${ ordinal(i) } Co-Borrower
+fields:
+  - Constitution: co_borrower[i].constitution
+    choices:
+      - Individual   
+      - Proprietary 
+      - Partnership Firm
+      - Limited Liability Partnership (LLP)
+      - Private/Public Limited Company
+  - First Name: co_borrower[i].name.first  
+    js show if: |
+      val("co_borrower[i].constitution") === "Individual"
+  - Middle Name: co_borrower[i].name.middle  
+    js show if: |
+      val("co_borrower[i].constitution") === "Individual"
+  - Last Name: co_borrower[i].name.last  
+    js show if: |
+      val("co_borrower[i].constitution") === "Individual"
+  - Company Name : co_borrower[i].company_name
+    js show if: |
+      val("co_borrower[i].constitution") !== "Individual"
+  - PAN/TAN/CIN: co_borrower[i].pan_or_tan_or_cin 
+  - Address: co_borrower[i].address.address
+  - City: co_borrower[i].address.city
+  - State: co_borrower[i].address.state
+  - Zip Code: co_borrower[i].address.zip
+  - Email – Address: co_borrower[i].mail
+    datatype: email
+  - Phone Number: co_borrower[i].phone
+  - Attention Mr./Ms : co_borrower[i].mr_ms
+---
+code: |
+  if co_borrower[i].constitution != 'Individual':
+    co_borrower[i].name.first = ''
+---
+mandatory: True
+question: |
+  Here is your document. ${ i.name } ${borrower.name}
+subquestion: |
+  Does it meet your approval? ${ i.constitution }
+yesno: user_approves
+attachment:
+  name: Your letter
+  filename: letter
+  docx template file: individual_Demo.docx
+  valid formats:
+    - pdf
+    - docx

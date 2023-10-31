@@ -84,7 +84,7 @@ question: |
 fields:
   - What Type of Borrower : company_type_of_borrower
     choices:
-      - Individual Borrower  
+      - Individual Borrower
       - Proprietary Concern
       - Partnership Firm
       - Limited Liability Partnership (LLP)
@@ -96,23 +96,19 @@ question: |
 fields:
   - Constitution: borrower_constitution
     choices:
-      - Individual   
-      - Proprietary 
+      - Individual
+      - Proprietary
       - Partnership Firm
       - Limited Liability Partnership (LLP)
       - Private/Public Limited Company
   - First Name : borrower.name.first  
-    js show if: |
-      val("borrower_constitution") === "Individual"
-  - Middle Name: borrower.name.middle 
-    js show if: |
-      val("borrower_constitution") === "Individual"
-  - Last Name: borrower.name.last
-    js show if: |
-      val("borrower_constitution") === "Individual"
-  - Company Name: borrower_company
-    js show if: |
-      val("borrower_constitution") !== "Individual"
+    show if: 
+      variable: borrower_constitution
+      is: Individual
+  - Company Name: borrower.name.first
+    hide if: 
+      variable: borrower_constitution
+      is: Individual
   - LLPIN : llpin
     show if:
       code: |
@@ -144,7 +140,6 @@ fields:
     show if: is_co_borrower_available
   - Attention Mr./Ms : borrwer_attention_mr_ms
 
- 
 ---
 field: co_borrower_details
 question: |
@@ -152,23 +147,19 @@ question: |
 fields:
   - Constitution: co_borrower[i].constitution
     choices:
-      - Individual   
-      - Proprietary 
+      - Individual
+      - Proprietary
       - Partnership Firm
       - Limited Liability Partnership (LLP)
       - Private/Public Limited Company
-  - First Name: co_borrower[i].name.first  
-    js show if: |
-      val("co_borrower[i].constitution") === "Individual"
-  - Middle Name: co_borrower[i].name.middle 
-    js show if: |
-      val("co_borrower[i].constitution") === "Individual"
-  - Last Name: co_borrower[i].name.last
-    js show if: |
-      val("co_borrower[i].constitution") === "Individual"
-  - Company Name : co_borrower[i].company_name
-    js show if: |
-      val("co_borrower[i].constitution") !== "Individual"
+  - Co-Borrower Name: co_borrower[i].name.first  
+    show if: 
+      variable: co_borrower[i].constitution
+      is:  "Individual"
+  - Company Name : co_borrower[i].name.first
+    hide if: 
+      variable: co_borrower[i].constitution
+      is: "Individual"
   - PAN/TAN/CIN: co_borrower[i].pan_or_tan_or_cin 
   - Address: co_borrower[i].address.address
   - City: co_borrower[i].address.city
@@ -196,24 +187,16 @@ question: |
 fields:
   - Constitution: guarantor[i].constitution
     choices:
-      - Individual   
-      - Proprietary 
+      - Individual
+      - Proprietary
       - Partnership Firm
       - Limited Liability Partnership (LLP)
       - Private/Public Limited Company
-  - First Name : guarantor[i].name.first  
+  - Guarantor Name : guarantor[i].name.first  
     show if: 
       variable: guarantor[i].constitution
       is: "Individual"
-  - Middle Name : guarantor[i].name.middle 
-    show if: 
-      variable: guarantor[i].constitution
-      is: "Individual"
-  - Last Name : guarantor[i].name.last
-    show if: 
-      variable: guarantor[i].constitution
-      is: "Individual"
-  - Company Name : guarantor[i].company_name
+  - Company Name : guarantor[i].name.first
     hide if: 
       variable: guarantor[i].constitution
       is: "Individual"
@@ -321,7 +304,7 @@ attachment code: |
 attachment:
   name: Document for Business Unsecured Loan
   variable name: the_document
-  docx template file: Booklet_BL_Unsecured_final1.docx
+  docx template file: Booklet_BL_Unsecured_1.docx
   valid formats:
     - pdf
     - docx
